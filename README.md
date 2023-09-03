@@ -22,7 +22,7 @@
   <h3 align="center">TERRA CORNER</h3>
 
   <p align="center">
-    An awesome README template to jumpstart your projects!
+    Where Conversations Connect
     <br />
     <br />
     <a href="https://terra-corner.vercel.app/">View Demo</a>
