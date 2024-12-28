@@ -1,0 +1,15 @@
+version: "3.8"
+services:
+  terra-corner:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - STREAM_APP_ID=${STREAM_APP_ID}
+      - STREAM_API_KEY=${STREAM_API_KEY}
+      - STREAM_API_SECRET=${STREAM_API_SECRET}
+      - TWILLIO_ACCOUNT_SID=${TWILLIO_ACCOUNT_SID}
+      - TWILLIO_AUTH_TOKEN=${TWILLIO_AUTH_TOKEN}
+      - TWILLIO_MESSAGING_SERVICE_SID=${TWILLIO_MESSAGING_SERVICE_SID}
+    restart: unless-stopped
