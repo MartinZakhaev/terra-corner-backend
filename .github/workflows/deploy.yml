@@ -4,10 +4,45 @@ on:
     branches: [ main ]
 
 jobs:
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      new_version: ${{ steps.semver.outputs.new_version }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      
+      - name: Get Previous Version
+        id: prev_version
+        run: |
+          PREV_VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "Previous version: $PREV_VERSION"
+          echo "prev_version=$PREV_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Bump version
+        id: semver
+        uses: mathieudutour/github-tag-action@v6.1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          default_bump: patch
+          release_branches: main
+          tag_prefix: v
+          commit_message: "chore: release v${version}"
+
   deploy:
+    needs: version
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy to Digital Ocean
+      - name: Create GitHub deployment
+        uses: chrnorm/deployment-action@v2
+        id: deployment
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          environment: production
+          initial-status: in_progress
+
+      - name: 🚀 Deploy to Digital Ocean
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.DROPLET_IP }}
@@ -15,4 +50,26 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /var/www/terra-corner-backend/terra-corner-backend
+            echo "🎯 Deploying version ${{ needs.version.outputs.new_version }}"
             ./deploy.sh
+
+      - name: Update deployment status (success)
+        if: success()
+        uses: chrnorm/deployment-status@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          environment-url: ${{ secrets.NGROK_URL }}
+          deployment-id: ${{ steps.deployment.outputs.deployment_id }}
+          state: success
+          environment: production
+          description: "✅ Deployed version ${{ needs.version.outputs.new_version }}"
+
+      - name: Update deployment status (failure)
+        if: failure()
+        uses: chrnorm/deployment-status@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          deployment-id: ${{ steps.deployment.outputs.deployment_id }}
+          state: failure
+          environment: production
+          description: "❌ Deployment failed"
