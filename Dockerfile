@@ -1,7 +1,7 @@
 FROM node:18
 WORKDIR /app
 COPY ["package.json", "package-lock.json*", "./"]
-RUN npm install
+RUN npm ci --only=production
 COPY . .
 EXPOSE 5000
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
