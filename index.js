@@ -19,7 +19,7 @@ app.use(express.urlencoded());
 app.use("/auth", authRoutes);
 
 app.get("/", (req, res) => {
-  res.send("Hello, world!!!");
+  res.send("Hello, world!");
 });
 
 app.post("/", (req, res) => {
