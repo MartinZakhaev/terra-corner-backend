@@ -1,0 +1,18 @@
+name: Deploy to Digital Ocean [ubuntu-s-1vcpu-512mb-10gb-sgp1-01]
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Digital Ocean
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.DROPLET_IP }}
+          username: root
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /var/www/terra-corner-backend/terra-corner-backend
+            ./deploy.sh
